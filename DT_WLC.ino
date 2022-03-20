@@ -25,7 +25,7 @@ int led4 = 12;     // s1 green half level LED
 int boost = 4;     // (10E resistor connect pin 4 to t2 for tank is dry) 
 int i;     //voltage status flag 
 int v=1020; //comparison variable(needs some adjustment) 
-int u=400; 
+int u=400; // see value below dry running active
 int b=0;   //buzzer flag 
 int m=0;   //motor flag 
 int c=0;   //sump flag 
@@ -53,12 +53,8 @@ void setup()
  pinMode(boost,OUTPUT);
  pinMode(volt_sencing,INPUT);
  pinMode(relay,OUTPUT);
- digitalWrite(buz,LOW); 
- digitalWrite(buttonPin,LOW);
- digitalWrite(motor,LOW);
- digitalWrite(relay,LOW);
-    
 
+ 
 Serial.begin(9600); 
 //////////////////**************////////////////// 
             digitalWrite(buz,HIGH); 
@@ -103,25 +99,25 @@ if(t1<v && t2>v)
 { 
 digitalWrite(motor,LOW); 
  digitalWrite(led3,HIGH); 
-  delay(50); 
+  delay(10); 
    digitalWrite(led2, LOW); 
-    delay(50); 
+    delay(10); 
 m=0; 
 b=0; 
 } 
 else if(t1>v && t2>v) 
 { 
  digitalWrite(led2, LOW); 
-  delay(50); 
+  delay(10); 
 b=0; 
 } 
-else if(t1>v && t2>v && t2>u) 
+else if(t1>v && t2<v && t2>u) 
 { 
 digitalWrite(motor,HIGH);
  digitalWrite(led3,LOW); 
-  delay(50); 
+  delay(10); 
    digitalWrite(led2, HIGH); 
-    delay(50); 
+    delay(10); 
 m=1; 
 b=0; 
 } 
@@ -132,30 +128,33 @@ b=1;
 m=0; 
 ///////////////*************/////////////// 
 } 
- if(s1<v && s2>v && m==1)   
+ if(s1>v && s2>v && m==1)   
 { 
-digitalWrite(motor,HIGH); 
+digitalWrite(motor,HIGH);
+digitalWrite(led4,HIGH);
+b=0;
 } 
- if(s1>v && s2>v)            
-{                           
+ if(s1<v && s2>v )            
+{  
+                           
 b=0;                        
 }                           
- if(s1>v && s2<v)           
+ if(s1<v && s2<v)           
 { 
 digitalWrite(motor,LOW); 
  digitalWrite(led4,LOW); 
-  c=0; 
+  c=1; 
 } 
- if(s1<v) 
+ if(s1>v) 
 { 
-c=1; 
+c=0; 
 } 
  if(m==0) 
 { 
 digitalWrite(motor,LOW); 
 } 
 //////////////////*************/////////////////// 
- if(b==1 || c==0 || t2<u) 
+ if(b==1 || c==1 || t2<u) 
 { 
  digitalWrite(buz,HIGH); 
   delay(500); 
@@ -180,23 +179,23 @@ digitalWrite(buz,LOW);
 digitalWrite(led1,LOW);
      ///////////////************////////////////
       }
-       if(commandState < 640) //604 (180VOLT), 640 (190VOLT)
+       if(commandState < 638) //604 (180VOLT), 638 (190VOLT)
       { 
          digitalWrite(relay, LOW); 
          b=1;
       }
-  else if(commandState > 680 && commandState < 885) 
+  else if(commandState > 656 && commandState < 873) //656 (195), 873 (260)
       { 
          digitalWrite(relay, HIGH); 
          delay(50);
       }
-  else if(commandState > 901 )//842 (250VOLT), 870 (260VOLT),901 (270V)
+  else if(commandState > 901 )// 873 (260VOLT),901 (270V)
       { 
          digitalWrite(relay, LOW);
          b=1;
       }
      ////////////****************/////////////
-       if (buttonState == HIGH&&t1>v&&t2>v){ 
+       if (buttonState == HIGH && t2>v){ 
         digitalWrite(motor, HIGH); 
         digitalWrite(led3,LOW); 
         delay(50); 
